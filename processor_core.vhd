@@ -4,7 +4,7 @@
 
 --Q2: how to stall
 
-
+--Q3: how to flush beq?
 
 
 ----------------------------------------------------------------------------------
@@ -258,6 +258,8 @@ signal halt:std_logic;
 
 	signal EX_MEM_writeData: std_logic_vector(31 downto 0);
 	signal PC_branch: std_logic_vector(31 downto 0);
+	signal PC_branch_MEM: std_logic_vector(31 downto 0);
+			
 
 
 --------------------------- MEM/WB register--------------------------------
@@ -364,7 +366,6 @@ process (rst,PCclk)
 --here		PC_branch<=Pc_Next+(SignExtension(29 downto 0)&"00");
 	
 
-		
 			---PC source--
 		
 					 
@@ -374,7 +375,7 @@ process (rst,PCclk)
 	--			       '0';
 
 				   PC_in <= PC_branch when PCSrc = '1' else
-			       		 (IF_ID_INSTR_Q(31 downto 28) & IF_ID_INSTR_Q(25 downto 0 ) & "00")  when Jump='1' else
+			       		 (PC_now(31 downto 28) & IF_ID_INSTR_Q(25 downto 0 ) & "00")  when Jump='1' else
 	             		  	Pc_Next ;
 
 
@@ -470,7 +471,7 @@ end process;
 				 
 --------------------------------------------------------------------
 	--Branch 
-	ID_EX_M_D(1)<='1' when  instruction=I_beq  else
+	ID_EX_M_D(2)<='1' when  instruction=I_beq  else
 				'0' ;
 	
 ---------------------------------------------------------------
@@ -652,8 +653,6 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 
     process (ALU_input_1, ALU_input_2, ID_EX_instruction_Q)
 		begin
-			Zero <= '0'; 
-
 			   case ID_EX_instruction_Q is 
 			      when I_addi =>
 			       calculate_temp1 <= ALU_input_1 + ALU_input_2;
@@ -685,12 +684,12 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 	calculate_zero_temp<='1' when EX_MEM_ALUOut_D="00000000000000000000000000000000" else 
 									'0';
 									
-	zero <= calculate_zero_temp;
+	
 
 
-	PC_branch<= ID_EX_PC_Q + (ID_EX_SignExtension_Q(29 downto 0) & "00"); 
+	PC_branch_MEM<= ID_EX_PC_Q + (ID_EX_SignExtension_Q(29 downto 0) & "00"); 
 
-	PCsrc <= Branch and zero;
+	
 
 -------------------------------------------------
 
@@ -700,6 +699,8 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 process(PCclk)
 		begin
 			if rising_edge(PCclk) then
+				zero <= calculate_zero_temp;
+				PC_branch<=	PC_branch_MEM;
 				EX_MEM_instruction_Q<=EX_MEM_instruction_D;
 				EX_MEM_WB_Q <= EX_MEM_WB_D;
 				EX_MEM_M_Q <= EX_MEM_M_D;
@@ -710,9 +711,10 @@ process(PCclk)
 			end if;
 	end process;
 
-
+				PCsrc <= Branch and zero;
 				MemRead <= EX_MEM_M_Q(1);
 				Branch <= EX_MEM_M_Q(2);
+
 				MemWrite <= EX_MEM_M_Q(0);
 
 	MEM_WB_WB_D <= EX_MEM_WB_Q;
