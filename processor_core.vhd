@@ -342,7 +342,7 @@ process (rst,PCclk)
 						 
 
 	halt <= 
-		'1' when ((MEM_WB_instruction_Q=I_lw or MEM_WB_instruction_Q=I_sw) and  EX_MEM_ALUOut_D(1 downto 0) /= "00")
+		'1' when ((MEM_WB_instruction_Q=I_lw or MEM_WB_instruction_Q=I_sw) and  EX_MEM_ALUOut_Q(1 downto 0) /= "00")
 			or ((MEM_WB_instruction_Q=invalid and EX_MEM_instruction_Q=invalid and ID_EX_instruction_Q=invalid ) or not PC_in(1 downto 0) = "00") else 
 		'0';
 
@@ -475,7 +475,7 @@ end process;
 	
 ---------------------------------------------------------------
 	--MemRead
-	ID_EX_M_D(0)<='1' when instruction=I_lw else
+	ID_EX_M_D(1)<='1' when instruction=I_lw else
 				'0' ;
 	
 	---------------------------------------------------------
@@ -685,7 +685,7 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 	calculate_zero_temp<='1' when EX_MEM_ALUOut_D="00000000000000000000000000000000" else 
 									'0';
 									
-	zero <= calculate_zero_temp xor IF_ID_INSTR_Q(26);--inst(26)-> beq,bne
+	zero <= calculate_zero_temp;
 
 
 	PC_branch<= ID_EX_PC_Q + (ID_EX_SignExtension_Q(29 downto 0) & "00"); 
@@ -719,11 +719,14 @@ process(PCclk)
 	
   ----------------------------- MEM Stage  --------------------------------
 
-	EX_MEM_memaddr<=EX_MEM_ALUOut_Q(31 downto 2)&"00";--shiftleft
+	EX_MEM_memaddr<=(EX_MEM_ALUOut_Q(31 downto 2)&"00");--shiftleft
+
 	memwen<=MemWrite;
 
 	MEM_WB_readData_D <= memdr;
+
 	memdw <= EX_MEM_writeData;
+	memaddr<=EX_MEM_memaddr;
 
 	--here
 	MEM_WB_ALUOut_D<=EX_MEM_ALUOut_Q;
@@ -740,12 +743,14 @@ process(PCclk)
 			MEM_WB_readData_Q <= MEM_WB_readData_D;
 			MEM_WB_ALUOut_Q <= MEM_WB_ALUOut_D;
 			MEM_WB_Write_register_Q <= MEM_WB_Write_register_D;
+		
 	end process;
 
 		----------------- WB stage------------------
 	RegWrite <= MEM_WB_WB_Q(1);
 	MemtoReg <= MEM_WB_WB_Q(0);
 	
+
 	RegWriteAddr <= MEM_WB_Write_register_Q;
 	--RegWriteAddr <= EX_MEM_Write_register_D;
 
