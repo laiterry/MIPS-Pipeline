@@ -1,8 +1,8 @@
-EN processor_core NULL G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd sub00/vhpl02 1397900911
-AR regtable arch_regtable G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd sub00/vhpl01 1397900910
+EN processor_core NULL G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd sub00/vhpl02 1397917327
+AR regtable arch_regtable G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd sub00/vhpl01 1397917326
 AR processor arch_processor G:/Dropbox/2-ceng3420/phase2/phase2/processor.vhd sub00/vhpl07 1397887918
-AR processor_core arch_processor_core G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd sub00/vhpl05 1397900912
-EN regtable NULL G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd sub00/vhpl00 1397900909
+AR processor_core arch_processor_core G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd sub00/vhpl05 1397917328
+EN regtable NULL G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd sub00/vhpl00 1397917325
 EN memtable NULL G:/Dropbox/2-ceng3420/phase2/phase2/memtable.vhd sub00/vhpl03 1397887913
 EN processor NULL G:/Dropbox/2-ceng3420/phase2/phase2/processor.vhd sub00/vhpl06 1397887917
 AR memtable arch_memtable G:/Dropbox/2-ceng3420/phase2/phase2/memtable.vhd sub00/vhpl04 1397887914
