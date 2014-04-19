@@ -174,11 +174,14 @@ signal halt:std_logic;
 	signal ID_EX_PC_D: std_logic_vector(31 downto 0);
 	signal ID_EX_PC_Q: std_logic_vector(31 downto 0);
 
-	signal ID_EX_readData_1_D: std_logic_vector(31 downto 0);
-	signal ID_EX_readData_1_Q: std_logic_vector(31 downto 0);
+	signal ID_EX_Read_data_1_D: std_logic_vector(31 downto 0);
+	signal ID_EX_Read_data_1_Q:std_logic_vector(31 downto 0);
 
-	signal ID_EX_readData_2_D: std_logic_vector(31 downto 0);
-	signal ID_EX_readData_2_Q: std_logic_vector(31 downto 0);
+	signal IF_ID_Read_data_1_Q: std_logic_vector(31 downto 0);
+	signal IF_ID_Read_data_2_Q: std_logic_vector(31 downto 0);
+
+	signal ID_EX_Read_data_2_D: std_logic_vector(31 downto 0);
+	signal ID_EX_Read_data_2_Q: std_logic_vector(31 downto 0);
 
 	signal ID_EX_INSTR_25_21_D: std_logic_vector(25 downto 21);
 	signal ID_EX_INSTR_25_21_Q: std_logic_vector(25 downto 21);
@@ -296,12 +299,7 @@ signal halt:std_logic;
 				---- register related internal data ------
 	signal Write_data:std_logic_vector(31 downto 0);
 
-	signal ID_EX_Read_data_1_D:std_logic_vector(31 downto 0);
-	signal ID_EX_Read_data_1_Q:std_logic_vector(31 downto 0);
 
-	signal ID_EX_Read_data_2_D:std_logic_vector(31 downto 0);
-	signal ID_EX_Read_data_2_Q:std_logic_vector(31 downto 0);
-	
 	
 ------------------------------- begin-------------------------------
 begin
@@ -312,7 +310,8 @@ begin
 
 --pay attention to the clk 
 
-regtable1: regtable port map (clk,rst,inst(25 downto 21),inst(20 downto 16), RegWrite,EX_MEM_Write_register_Q,Write_data,ID_EX_Read_data_1_D,ID_EX_Read_data_2_D,regaddr,regdout);
+regtable1: regtable port map (clk,rst,IF_ID_INSTR_Q(25 downto 21),IF_ID_INSTR_Q(20 downto 16), RegWrite,RegWriteAddr,Write_data,ID_EX_Read_data_1_D,ID_EX_Read_data_2_D,regaddr,regdout);
+
 
 
 
@@ -336,14 +335,15 @@ process (rst,PCclk)
 			PC_now <="00000000000000000100000000000000"; 		
 	   	  elsif rising_edge(PCclk) then
 		    PC_now <= PC_in;
+
 		end if;		
 	end process;
 	
 						 
 
 	halt <= 
-		'1' when ((instruction=I_lw or instruction=I_sw) and  EX_MEM_ALUOut_D(1 downto 0) /= "00")
-			or (instruction=invalid or not PC_in(1 downto 0) = "00") else 
+		'1' when ((MEM_WB_instruction_Q=I_lw or MEM_WB_instruction_Q=I_sw) and  EX_MEM_ALUOut_D(1 downto 0) /= "00")
+			or ((MEM_WB_instruction_Q=invalid and EX_MEM_instruction_Q=invalid and ID_EX_instruction_Q=invalid ) or not PC_in(1 downto 0) = "00") else 
 		'0';
 
 	process (clk, run)
@@ -393,6 +393,7 @@ process (rst,PCclk)
 
 				ID_INSTR_31_26_D <= IF_ID_INSTR_Q(31 downto 26);
 				ID_INSTR_25_21_D <= IF_ID_INSTR_Q(25 downto 21);
+				ID_INSTR_20_16_D <= IF_ID_INSTR_Q(20 downto 16);
 				ID_INSTR_15_11_D <= IF_ID_INSTR_Q(15 downto 11);
 				ID_INSTR_15_0_D <= IF_ID_INSTR_Q(15 downto 0);
 				ID_INSTR_5_0_D <= IF_ID_INSTR_Q(5 downto 0);
@@ -402,7 +403,8 @@ process (rst,PCclk)
 			if rising_edge(PCclk) then
 			IF_ID_PC_Q <= IF_ID_PC_D;
 			IF_ID_INSTR_Q<= IF_ID_INSTR_D;
-			
+		--	ID_EX_Read_data_1_D<=IF_ID_Read_data_1_Q;
+		--	ID_EX_Read_data_2_D<=IF_ID_Read_data_2_Q;
 			end if;
 	end process;
  
@@ -528,8 +530,9 @@ end process;
 							  instruction=I_lui;
 			--	else null; 			  
 					
-	-----------------------------------------------------------				
-		RegWrite	<='1' when instruction=I_lw or 
+	-----------------------------------------------------------		
+	--		
+		ID_EX_WB_D(1)	<='1' when instruction=I_lw or 
 							  instruction=R_add or 
 							  instruction=R_sub or 
 							  instruction=R_and or 
@@ -541,13 +544,8 @@ end process;
 								instruction=I_slti or
 								instruction=I_sltiu	else     		
 					'0';
-	 ID_EX_WB_Register_D<='1' when RegWrite<= '1'  
-								else 
-								'0';
 
-		ID_EX_WB_D(1) <= '1' when ID_EX_WB_Register_D<= '1'  
-								else 
-								'0';
+
 		-----------------------------------------------------------
 		
 				
@@ -578,11 +576,9 @@ process (PCclk)
 				ID_EX_Read_data_1_Q <= ID_EX_Read_data_1_D;
 				ID_EX_Read_data_2_Q <= ID_EX_Read_data_2_D;
 				ID_EX_SignExtension_Q <= ID_EX_SignExtension_D;
+				ID_EX_INSTR_25_21_Q<=ID_INSTR_25_21_D;
 				ID_EX_INSTR_20_16_Q <= ID_INSTR_20_16_D;
 				ID_EX_INSTR_15_11_Q <= ID_INSTR_15_11_D;
-				ID_EX_readData_1_Q<=ID_EX_readData_1_D;
-				ID_EX_readData_2_Q<=ID_EX_readData_2_D;
-
 			end if;
 	end process;
 
@@ -626,7 +622,7 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 
 
 
-	ALU_input_1 <= ID_EX_readData_1_Q when  ForwardA = "00" else
+	ALU_input_1 <= ID_EX_Read_data_1_Q when  ForwardA = "00" else
 			EX_MEM_ALUOut_Q when ForwardA = "10" else 
 			RegWriteData	when ForwardA = "01" else 
 			"00000000000000000000000000000000"; 
@@ -634,7 +630,7 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 	ALU_input_2 <= ID_EX_SignExtension_Q when ALUSrc = '1' else 
 			EX_WriteData;
 
-	EX_WriteData <= ID_EX_readData_2_Q when ForwardB = "00" else
+	EX_WriteData <= ID_EX_Read_data_2_Q when ForwardB = "00" else
 					EX_MEM_ALUOut_Q when ForwardB = "10" else
 					RegWriteData when ForwardB = "01" else
 					"00000000000000000000000000000000";
@@ -687,10 +683,11 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 
  ----------------------------------- EX/MEM register-------------------------
 
-
+ EX_MEM_instruction_D<=ID_EX_instruction_Q;
 process(PCclk)
 		begin
 			if rising_edge(PCclk) then
+				EX_MEM_instruction_Q<=EX_MEM_instruction_D;
 				EX_MEM_WB_Q <= EX_MEM_WB_D;
 				EX_MEM_M_Q <= EX_MEM_M_D;
 				EX_MEM_ALUOut_Q <= EX_MEM_ALUOut_D;
@@ -714,12 +711,18 @@ process(PCclk)
 
 	MEM_WB_readData_D <= memdr;
 	memdw <= EX_MEM_writeData;
+
+	--here
 	MEM_WB_ALUOut_D<=EX_MEM_ALUOut_Q;
+	--MEM_WB_ALUOut_D<=EX_MEM_writeData;
+
 	MEM_WB_Write_register_D<=EX_MEM_Write_register_Q;
 
+	MEM_WB_instruction_D<=EX_MEM_instruction_Q;
   ----------------------- MEM/WB register -------------
 		process(PCclk)
 		begin
+			MEM_WB_instruction_Q<=MEM_WB_instruction_D;
 			MEM_WB_WB_Q <= MEM_WB_WB_D;
 			MEM_WB_readData_Q <= MEM_WB_readData_D;
 			MEM_WB_ALUOut_Q <= MEM_WB_ALUOut_D;
@@ -729,8 +732,11 @@ process(PCclk)
 	RegWrite <= MEM_WB_WB_Q(1);
 	MemtoReg <= MEM_WB_WB_Q(0);
 	
-	RegWriteAddr <= MEM_WB_Write_register_Q;
-	RegWriteData<=Write_data;
+	RegWriteAddr <= MEM_WB_Write_register_D;
+	--RegWriteAddr <= EX_MEM_Write_register_D;
+
+	RegWriteData<=MEM_WB_readData_Q when MemToReg = '1' else
+					MEM_WB_ALUOut_Q;
 
 	Write_data <= MEM_WB_readData_Q when MemToReg = '1' else
 					MEM_WB_ALUOut_Q;

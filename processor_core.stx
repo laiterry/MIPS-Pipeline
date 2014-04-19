@@ -4,13 +4,13 @@ Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
 
 
 Total REAL time to Xst completion: 0.00 secs
-Total CPU time to Xst completion: 0.13 secs
+Total CPU time to Xst completion: 0.16 secs
  
 --> Parameter xsthdpdir set to G:/Dropbox/2-ceng3420/phase2/phase2/xst
 
 
 Total REAL time to Xst completion: 0.00 secs
-Total CPU time to Xst completion: 0.13 secs
+Total CPU time to Xst completion: 0.16 secs
  
 --> WARNING:Xst:3164 - Option "-debug" found multiple times in the command line. Only the first occurence is considered.
 
@@ -22,17 +22,16 @@ Architecture arch_regtable of Entity regtable is up to date.
 Compiling vhdl file "G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd" in Library work.
 Entity <processor_core> compiled.
 Entity <processor_core> (Architecture <arch_processor_core>) compiled.
-ERROR:HDLParsers - Cannot rename dependency database for library "work", file is "G:/Dropbox/2-ceng3420/phase2/phase2/xst/work/hdpdeps.ref", Temporary database file "G:\Dropbox\2-ceng3420\phase2\phase2\xst\work\xil_10568_8" will remain.  System error message is:  File exists
 
 
 Total REAL time to Xst completion: 0.00 secs
-Total CPU time to Xst completion: 0.24 secs
+Total CPU time to Xst completion: 0.28 secs
  
 --> 
 
-Total memory usage is 215748 kilobytes
+Total memory usage is 215364 kilobytes
 
-Number of errors   :    1 (   0 filtered)
+Number of errors   :    0 (   0 filtered)
 Number of warnings :    1 (   0 filtered)
 Number of infos    :    0 (   0 filtered)
 

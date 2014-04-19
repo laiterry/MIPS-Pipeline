@@ -1,0 +1,15 @@
+V3 7
+FL G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd 2014/04/19.15:56:31 P.68d
+EN work/processor_core 1397894202 \
+      FL G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd \
+      PB ieee/std_logic_1164 1370735607 PB ieee/STD_LOGIC_UNSIGNED 1370735609 \
+      PB ieee/std_logic_arith 1370735608
+AR work/processor_core/arch_processor_core 1397894203 \
+      FL G:/Dropbox/2-ceng3420/phase2/phase2/processor_core.vhd \
+      EN work/processor_core 1397894202 CP regtable
+FL G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd 2009/03/10.22:46:18 P.68d
+EN work/regtable 1397894200 FL G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd \
+      PB ieee/std_logic_1164 1370735607 PB ieee/STD_LOGIC_UNSIGNED 1370735609 \
+      PB ieee/std_logic_arith 1370735608
+AR work/regtable/arch_regtable 1397894201 \
+      FL G:/Dropbox/2-ceng3420/phase2/phase2/regtable.vhd EN work/regtable 1397894200
