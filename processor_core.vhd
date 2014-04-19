@@ -621,7 +621,6 @@ EX_MEM_Write_register_D <= ID_EX_INSTR_20_16_Q when RegDst = '0' else --rd
 
 
 
-
 	ALU_input_1 <= ID_EX_Read_data_1_Q when  ForwardA = "00" else
 			EX_MEM_ALUOut_Q when ForwardA = "10" else 
 			RegWriteData	when ForwardA = "01" else 
@@ -729,10 +728,11 @@ process(PCclk)
 			MEM_WB_Write_register_Q <= MEM_WB_Write_register_D;
 	end process;
 
+		----------------- WB stage------------------
 	RegWrite <= MEM_WB_WB_Q(1);
 	MemtoReg <= MEM_WB_WB_Q(0);
 	
-	RegWriteAddr <= MEM_WB_Write_register_D;
+	RegWriteAddr <= MEM_WB_Write_register_Q;
 	--RegWriteAddr <= EX_MEM_Write_register_D;
 
 	RegWriteData<=MEM_WB_readData_Q when MemToReg = '1' else
@@ -741,21 +741,36 @@ process(PCclk)
 	Write_data <= MEM_WB_readData_Q when MemToReg = '1' else
 					MEM_WB_ALUOut_Q;
 
+process(PCclk)
+	begin 
+		if (PCclk='0') then 
+			if (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_25_21_Q)) then 
+				ForwardA(1) <= '0';
+			else
+				ForwardA(1) <= '0';
+			end if;
 
-	---------------------------EX Forward Unit -----------
-ForwardA <= "10" when (MEM_WB_WB_D(1)='1' and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_25_21_Q)) else
-			 "00";
+			if (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_20_16_Q)) then 
+				ForwardB(1) <= '0';
+			else
+				ForwardB(1) <= '0';
+			end if;
 
-ForwardB <= "10" when (MEM_WB_WB_D(1)='1' and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_20_16_Q)) else 
-			"00";
 
+			if (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_25_21_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_25_21_Q)) then 
+				ForwardA(0) <= '1';
+			else
+				ForwardA(0) <= '0';
+			end if;
 
-				------------MEM Forward Unit-----------------
-ForwardA <= "01" when (RegWrite='1' and (RegWriteAddr /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_25_21_Q) and (RegWriteAddr = ID_EX_INSTR_25_21_Q)) else
-			"00";
+			if (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_20_16_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_20_16_Q)) then 
+				ForwardB(0) <= '1';
+			else
+				ForwardB(0) <= '0';
+			end if;
+		end if;
+	end process;
 
-ForwardB <= "01" when (RegWrite='1' and (RegWriteAddr /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_20_16_Q) and (RegWriteAddr = ID_EX_INSTR_20_16_Q)) else
-			"00";
 
 
 ----------------------------------ID Hazard detection Unit-------------------

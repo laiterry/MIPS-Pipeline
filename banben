@@ -1,0 +1,54 @@
+
+	---------------------------EX Forward Unit -----------
+ForwardA(1) <= '1' when (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_25_21_Q)) else
+			'0';
+
+ForwardB(1) <= '1' when (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_20_16_Q)) else 
+			'0';
+
+
+				------------MEM Forward Unit-----------------
+ForwardA(0) <= '1' when (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_25_21_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_25_21_Q)) else
+			'0';
+
+ForwardB(0)<= '1' when (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_20_16_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_20_16_Q)) else
+			'0';
+
+
+
+
+
+
+
+
+
+
+	process(PCclk)
+	begin 
+		if (PCclk='1') then 
+			if (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_25_21_Q)) then 
+				ForwardA(1) <= '0';
+			else
+				ForwardA(1) <= '0';
+			end if;
+
+			if (EX_MEM_WB_D(1)='1' and (EX_MEM_Write_register_D /= "00000") and (EX_MEM_Write_register_D = ID_EX_INSTR_20_16_Q)) then 
+				ForwardB(1) <= '0';
+			else
+				ForwardB(1) <= '0';
+			end if;
+
+
+			if (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_25_21_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_25_21_Q)) then 
+				ForwardA(0) <= '1';
+			else
+				ForwardA(0) <= '0';
+			end if;
+
+			if (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_MEM_Write_register_Q /= ID_EX_INSTR_20_16_Q) and (MEM_WB_Write_register_Q = ID_EX_INSTR_20_16_Q)) then 
+				ForwardB(0) <= '1';
+			else
+				ForwardB(0) <= '0';
+			end if;
+		end if;
+	end process;
