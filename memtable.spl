@@ -1,0 +1,15 @@
+[Inputs]
+clk
+rst
+wen
+extwen
+=instaddr[31:0]=
+=addr[31:0]=
+=din[31:0]=
+=extaddr[31:0]=
+=extdin[31:0]=
+[Outputs]
+=instout[31:0]=
+=dout[31:0]=
+=extdout[31:0]=
+[BiDir]

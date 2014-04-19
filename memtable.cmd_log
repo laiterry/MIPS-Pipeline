@@ -1,0 +1,2 @@
+vhdtdtfi -lib work memtable.vhd -prj phase2 -o memtable.spl -module memtable -template e:/Xilinx/14.6/ISE_DS/ISE//data/splfile.tft -deleteonerror 
+spl2sym -intstyle ise -family spartan3a memtable.spl G:/Dropbox/2-ceng3420/phase2/phase2/memtable.sym 

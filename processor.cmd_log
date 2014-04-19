@@ -1,0 +1,1 @@
+xst -intstyle ise -ifn "G:/Dropbox/2-ceng3420/phase2/phase2/processor.xst" -ofn "G:/Dropbox/2-ceng3420/phase2/phase2/processor.syr" 

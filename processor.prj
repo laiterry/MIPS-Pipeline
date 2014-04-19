@@ -1,0 +1,4 @@
+vhdl work "regtable.vhd"
+vhdl work "processor_core.vhd"
+vhdl work "memtable.vhd"
+vhdl work "processor.vhd"
