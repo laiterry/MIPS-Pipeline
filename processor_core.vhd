@@ -255,6 +255,9 @@ signal halt:std_logic;
 ---------------------------  MEM Stage--------------------------------
 	signal EX_MEM_Zero: std_logic;
 	signal PCsrc: std_logic;
+	signal stall: std_logic;
+	signal flush: std_logic;
+	signal flush3times: std_logic;
 
 	signal EX_MEM_writeData: std_logic_vector(31 downto 0);
 	signal PC_branch: std_logic_vector(31 downto 0);
@@ -336,8 +339,11 @@ process (rst,PCclk)
 		if (rst='1') then
 			PC_now <="00000000000000000100000000000000"; 		
 	   	  elsif rising_edge(PCclk) then
+	   	  	if stall='1' or ( (clk_enable='1') and ( inst="00000000000000000000000000000000" ))then
+		    PC_now <= PC_now;
+		    else
 		    PC_now <= PC_in;
-
+		    end if;
 		end if;		
 	end process;
 	
@@ -368,21 +374,14 @@ process (rst,PCclk)
 
 			---PC source--
 		
-					 
---				PCSrc(1)  <= Jump;
-	--			PCSrc(0)  <= '1' when Jump='0' and Branch='1' and zero='1' else
-	--			       '1' when Jump='1' and inst(31 downto 26)="000000"  else
-	--			       '0';
+				
 
 				   PC_in <= PC_branch when PCSrc = '1' else
 			       		 (PC_now(31 downto 28) & IF_ID_INSTR_Q(25 downto 0 ) & "00")  when Jump='1' else
 	             		  	Pc_Next ;
 
 
-			--PC_sourse <=  P_jump when Jump='1' else
-			--			  P_branch when (Jump='0' and Branch='1' and zero='1') or (Jump='1' and  instruction=J_jr) else
-			--					P_pc_next ; 
-						
+		
 
 
   
@@ -468,7 +467,8 @@ end process;
 	
 	Jump<='1' when  instruction=J_j else
 			'0' ;
-				 
+
+	flush<=Jump;
 --------------------------------------------------------------------
 	--Branch 
 	ID_EX_M_D(2)<='1' when  instruction=I_beq  else
@@ -507,8 +507,7 @@ end process;
 								"11";
 	----------------------------------------------------------
 	--MemWrite
-	ID_EX_M_D(0)<='1' when
-							  instruction=I_sw  else       
+	ID_EX_M_D(0)<='1' when instruction=I_sw  else       
 					'0' ;
 
 
@@ -533,6 +532,7 @@ end process;
 					
 	-----------------------------------------------------------		
 	--		
+	--RegWrite
 		ID_EX_WB_D(1)	<='1' when instruction=I_lw or 
 							  instruction=R_add or 
 							  instruction=R_sub or 
@@ -711,15 +711,19 @@ process(PCclk)
 			end if;
 	end process;
 
+	
+  ----------------------------- MEM Stage  --------------------------------
+
+
 				PCsrc <= Branch and zero;
 				MemRead <= EX_MEM_M_Q(1);
 				Branch <= EX_MEM_M_Q(2);
 
+				flush3times<=Branch;
+
 				MemWrite <= EX_MEM_M_Q(0);
 
 	MEM_WB_WB_D <= EX_MEM_WB_Q;
-	
-  ----------------------------- MEM Stage  --------------------------------
 
 	EX_MEM_memaddr<=(EX_MEM_ALUOut_Q(31 downto 2)&"00");--shiftleft
 
@@ -764,10 +768,10 @@ process(PCclk)
 
 
 	---------------------------EX Forward Unit -----------
-ForwardA(1) <= '1' when (EX_MEM_WB_Q(1)='1' and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_25_21_Q)) else
+ForwardA(1) <= '1' when ((EX_MEM_WB_Q(1)='1' or Branch='1') and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_25_21_Q)) else
 			'0';
 
-ForwardB(1) <= '1' when (EX_MEM_WB_Q(1)='1' and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_20_16_Q)) else 
+ForwardB(1) <= '1' when ((EX_MEM_WB_Q(1)='1' or Branch='1') and (EX_MEM_Write_register_Q /= "00000") and (EX_MEM_Write_register_Q = ID_EX_INSTR_20_16_Q)) else 
 			'0';
 
 
@@ -782,10 +786,18 @@ ForwardB(0)<= '1' when (RegWrite='1' and (MEM_WB_Write_register_Q /= 0) and (EX_
 
 
 ----------------------------------ID Hazard detection Unit-------------------
---if (ID/EX.MemRead
---and ((ID/EX.RegisterRt = IF/ID.RegisterRs)
---or  (ID/EX.RegisterRt = IF/ID.RegisterRt)))
---stall the pipeline
+
+
+		stall<='1' when ( (ID_EX_M_D(1)='1') and ((ID_INSTR_20_16_D = IF_ID_INSTR_Q(20 downto 16)) or ( ID_INSTR_20_16_D = IF_ID_INSTR_Q(25 downto 21) )) ) else
+				'0';
+
+		
+
+
+
+
+
+
 
 --if (IDcontrol.Branch
 --and (EX/MEM.RegisterRd != 0)
